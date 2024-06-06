@@ -22,6 +22,7 @@ export default function Home() {
     console.log("User Selected Value - ", event.target.value);
   };
 
+  const test = true;
   const [data, setData] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [distance, setDistance] = useState(null);
@@ -38,7 +39,7 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         setData(data);
-        console.log(data);
+        // console.log(data);
       });
   }, [value]);
 
@@ -51,8 +52,8 @@ export default function Home() {
   };
 
   console.log("The value is : " + value);
-  console.log("DATA : ");
-  console.log(data);
+  // console.log("DATA : ");
+  // console.log(data);
 
   const handleInfoWindowClose = () => {
     setSelectedMarker(null);
@@ -67,7 +68,13 @@ export default function Home() {
 
     return {
       url: `https://maps.google.com/mapfiles/ms/icons/${
-        item.properties.TYPE === "Schulens" ? "red" : "green"
+        item.properties.TYPE === "Schulens"
+          ? "red"
+          : item.properties.TYPE === "Kindertageseinrichtungens"
+          ? "green"
+          : item.properties.TYPE === "Jugendberufshilfens"
+          ? "blue"
+          : "yellow"
       }-dot.png`,
       // url: `icons/${
       //   item.properties.TYPE === "Schulens" ? "Red" : "Green"
@@ -89,8 +96,8 @@ export default function Home() {
       },
       (response, status) => {
         if (status === "OK") {
-          console.log("THE distance matrix is");
-          console.log(response);
+          // console.log("THE distance matrix is");
+          // console.log(response);
           const distanceText = response.rows[0].elements[0].distance.text;
           const driveTimeText = response.rows[0].elements[0].duration.text;
           setDistance(distanceText);
@@ -111,10 +118,12 @@ export default function Home() {
             {/* DROPDOWN MENU OR SELECT */}
             <div className="w-60 ml-40 block mb-10  ">
               <select
+                name="institutions"
+                id="institutions"
                 onChange={onOptionChangeHandler}
                 className="block w-full mt-1 p-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 cursor-pointer sm:text-sm font-medium"
               >
-                <option>Please choose one option</option>
+                <option value={"all"}>All institutions</option>
                 {options.map((option, index) => {
                   return <option key={index}>{option}</option>;
                 })}
@@ -130,10 +139,25 @@ export default function Home() {
                 // mapContainerStyle={{ width: "100%", height: "100%" }}
                 mapContainerClassName="w-[80%] h-2/3 mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
               >
+                {map && (
+                  <Marker
+                    key={"Home"}
+                    position={{
+                      lat: specificPoint.lat,
+                      lng: specificPoint.lng,
+                    }}
+                    icon={{
+                      url: "https://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+                      scaledSize: new window.google.maps.Size(40, 40),
+                    }}
+                    zIndex={1000}
+                  ></Marker>
+                )}
+
                 {data.map((item) => (
                   <Marker
                     onClick={() => handleMarkerClick(item)}
-                    key={item.properties.ID}
+                    key={item._id}
                     position={{ lat: item.geometry.y, lng: item.geometry.x }}
                     title={
                       item.properties.TRAEGER
@@ -175,6 +199,9 @@ export default function Home() {
                           ? selectedMarker.properties.TRAEGER
                           : selectedMarker.properties.BEZEICHNUNG}
                       </h2>
+                      <h1 className=" text-gray-500">
+                        Type : {selectedMarker.properties.TYPE}{" "}
+                      </h1>
                       <p>{selectedMarker.properties.STRASSE}</p>
                       <p>{selectedMarker.properties.PLZ}</p>
                       <p>
