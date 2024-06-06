@@ -24,6 +24,10 @@ export default function SignUp() {
     const userSelectedPlace = autocompleteRef.current.getPlace();
     const { lat, lng } = userSelectedPlace.geometry.location;
     console.log("The object is: ", userSelectedPlace);
+    console.log(
+      "The address is ",
+      document.getElementById("userSelectedAddress").value
+    );
     console.log("Latitude:", lat());
     console.log("Longitude:", lng());
   };
@@ -98,6 +102,7 @@ export default function SignUp() {
             <Autocomplete
               onLoad={(autocomplete) => {
                 autocomplete.setComponentRestrictions({ country });
+                autocomplete.setTypes(["address"]);
                 autocompleteRef.current = autocomplete;
               }}
               onPlaceChanged={() => {
@@ -106,6 +111,7 @@ export default function SignUp() {
               }}
             >
               <input
+                id="userSelectedAddress"
                 type="text"
                 value={address}
                 onChange={(e) => {
