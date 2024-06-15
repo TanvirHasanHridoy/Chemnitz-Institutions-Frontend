@@ -17,7 +17,7 @@ const Navbar = () => {
   }
   useEffect(() => {
     const Ntoken = Cookies.get("token");
-    console.log(Ntoken);
+    // console.log(Ntoken);
     const Nid = localStorage.getItem("id");
     setId(Nid);
     setToken(Ntoken);
@@ -26,11 +26,9 @@ const Navbar = () => {
   return (
     <nav className="flex justify-between items-center p-4 bg-blue-900 w-full">
       <div className="flex space-x-4">
-        {token && id ? (
-          <a href="/" className="text-white">
-            Home
-          </a>
-        ) : null}
+        <a href="/" className="text-white">
+          Home
+        </a>
 
         <a href="/documentation" className="text-white">
           Documentation

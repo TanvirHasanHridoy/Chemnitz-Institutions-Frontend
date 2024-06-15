@@ -8,6 +8,7 @@ import {
   InfoWindow,
 } from "@react-google-maps/api";
 import Navbar from "@/ui/Navbar";
+import Link from "next/link";
 
 export default function Home() {
   const [value, setValue] = useState(undefined);
@@ -213,6 +214,11 @@ export default function Home() {
                       </p>
                       {distance && <p>Distance: {distance}</p>}
                       {driveTime && <p>Driving Duration: {driveTime}</p>}
+                      <div className="">
+                        <Link href={`/institutions/${selectedMarker._id}`}>
+                          See more
+                        </Link>
+                      </div>
                     </div>
                   </InfoWindow>
                 )}
