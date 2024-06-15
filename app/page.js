@@ -7,6 +7,7 @@ import {
   Marker,
   InfoWindow,
 } from "@react-google-maps/api";
+import Navbar from "@/ui/Navbar";
 
 export default function Home() {
   const [value, setValue] = useState(undefined);
@@ -51,7 +52,7 @@ export default function Home() {
     calculateDistance(specificPoint, destination);
   };
 
-  console.log("The value is : " + value);
+  // console.log("The value is : " + value);
   // console.log("DATA : ");
   // console.log(data);
 
@@ -108,13 +109,13 @@ export default function Home() {
   };
 
   return (
-    <main className="flex w-screen min-h-screen flex-col items-center justify-between p-24">
+    <main className=" w-full  h-full box-border ">
+      <Head>
+        <title>Chemnitz institutions</title>
+      </Head>
       <div>
-        <Head>
-          <title>Client-Side Posts</title>
-        </Head>
-        <main>
-          <div className="h-screen w-screen bg-[#dae6d5] py-10">
+        <div className="flex w-full min-h-screen flex-col items-center justify-between  ">
+          <div className="h-screen w-full bg-[#dae6d5] py-10">
             {/* DROPDOWN MENU OR SELECT */}
             <div className="w-60 ml-40 block mb-10  ">
               <select
@@ -218,7 +219,7 @@ export default function Home() {
               </GoogleMap>
             </LoadScript>
           </div>
-        </main>
+        </div>
       </div>
     </main>
   );
