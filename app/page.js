@@ -1,14 +1,9 @@
 "use client";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import {
-  LoadScript,
-  GoogleMap,
-  Marker,
-  InfoWindow,
-} from "@react-google-maps/api";
-import Navbar from "@/ui/Navbar";
+import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import Link from "next/link";
+import { Loader } from "@googlemaps/js-api-loader";
 
 export default function Home() {
   const [value, setValue] = useState(undefined);
@@ -24,15 +19,14 @@ export default function Home() {
     console.log("User Selected Value - ", event.target.value);
   };
 
-  const test = true;
   const [data, setData] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [distance, setDistance] = useState(null);
   const [driveTime, setDriveTime] = useState(null);
   const [map, setMap] = useState(null);
+  const [googleApiLoaded, setGoogleApiLoaded] = useState(false);
 
   useEffect(() => {
-    // Determine the endpoint based on the selected value
     const endpoint = value
       ? `http://localhost:3000/${value.toLowerCase()}`
       : "http://localhost:3000/all";
@@ -41,7 +35,6 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         setData(data);
-        // console.log(data);
       });
   }, [value]);
 
@@ -52,10 +45,6 @@ export default function Home() {
     const destination = { lat: marker.geometry.y, lng: marker.geometry.x };
     calculateDistance(specificPoint, destination);
   };
-
-  // console.log("The value is : " + value);
-  // console.log("DATA : ");
-  // console.log(data);
 
   const handleInfoWindowClose = () => {
     setSelectedMarker(null);
@@ -78,9 +67,6 @@ export default function Home() {
           ? "blue"
           : "yellow"
       }-dot.png`,
-      // url: `icons/${
-      //   item.properties.TYPE === "Schulens" ? "Red" : "Green"
-      // }-Dot.png`,
       scaledSize: new window.google.maps.Size(30, 30),
       origin: new window.google.maps.Point(0, 0),
       anchor: new window.google.maps.Point(21, 42),
@@ -98,8 +84,6 @@ export default function Home() {
       },
       (response, status) => {
         if (status === "OK") {
-          // console.log("THE distance matrix is");
-          // console.log(response);
           const distanceText = response.rows[0].elements[0].distance.text;
           const driveTimeText = response.rows[0].elements[0].duration.text;
           setDistance(distanceText);
@@ -109,16 +93,28 @@ export default function Home() {
     );
   };
 
+  useEffect(() => {
+    const loader = new Loader({
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+      version: "weekly",
+      libraries: ["places"],
+    });
+
+    loader.load().then(() => {
+      console.log("Google Maps API loaded");
+      setGoogleApiLoaded(true);
+    });
+  }, []);
+
   return (
-    <main className=" w-full  h-full box-border ">
+    <main className="w-full h-full box-border">
       <Head>
         <title>Chemnitz institutions</title>
       </Head>
       <div>
-        <div className="flex w-full min-h-screen flex-col items-center justify-between  ">
+        <div className="flex w-full min-h-screen flex-col items-center justify-between">
           <div className="h-screen w-full bg-[#dae6d5] py-10">
-            {/* DROPDOWN MENU OR SELECT */}
-            <div className="w-60 ml-40 block mb-10  ">
+            <div className="w-60 ml-40 block mb-10">
               <select
                 name="institutions"
                 id="institutions"
@@ -131,14 +127,11 @@ export default function Home() {
                 })}
               </select>
             </div>
-            <LoadScript
-              googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-            >
+            {googleApiLoaded && (
               <GoogleMap
                 onLoad={onLoad}
                 center={{ lat: 50.8285947, lng: 12.9216001 }}
                 zoom={12}
-                // mapContainerStyle={{ width: "100%", height: "100%" }}
                 mapContainerClassName="w-[80%] h-2/3 mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
               >
                 {map && (
@@ -166,22 +159,7 @@ export default function Home() {
                         ? item.properties.TRAEGER
                         : item.properties.BEZEICHNUNG
                     }
-                    // icon={{
-                    //   url: "/icons/Red-Dot.png",
-                    //   scaledSize: new window.google.maps.Size(32, 32),
-                    // }}
                     icon={createMarkerIcon(item)}
-                    // icon={{
-                    //   url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-                    //   scaledSize: new window.google.maps.Size(42, 42),
-                    //   origin: new window.google.maps.Point(0, 0),
-                    //   anchor: new window.google.maps.Point(21, 42),
-                    // }}
-                    // animation={
-                    //  // !window.google ? null : window.google.maps.Animation.DROP
-                    // }
-                    // // draggable={true}
-                    // clickable={true}
                   ></Marker>
                 ))}
                 {selectedMarker && (
@@ -201,7 +179,7 @@ export default function Home() {
                           ? selectedMarker.properties.TRAEGER
                           : selectedMarker.properties.BEZEICHNUNG}
                       </h2>
-                      <h1 className=" text-gray-500">
+                      <h1 className="text-gray-500">
                         Type : {selectedMarker.properties.TYPE}{" "}
                       </h1>
                       <p>{selectedMarker.properties.STRASSE}</p>
@@ -223,7 +201,7 @@ export default function Home() {
                   </InfoWindow>
                 )}
               </GoogleMap>
-            </LoadScript>
+            )}
           </div>
         </div>
       </div>
