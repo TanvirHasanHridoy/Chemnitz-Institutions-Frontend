@@ -5,6 +5,7 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./ui/**/*.{js,ts,jsx,tsx,mdx}",
+    "./node_modules/shadcn/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

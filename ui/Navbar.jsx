@@ -1,20 +1,27 @@
 "use client";
+import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 
 const Navbar = () => {
   const [token, setToken] = useState();
   const [id, setId] = useState();
   function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("id");
-    window.location.reload();
+    fetch("http://localhost:3000/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    }).then((data) => {
+      console.log("The data is");
+      console.log(data);
+      setToken(null);
+    });
   }
   useEffect(() => {
-    const Ntoken = localStorage.getItem("token");
+    const Ntoken = Cookies.get("token");
+    console.log(Ntoken);
     const Nid = localStorage.getItem("id");
     setId(Nid);
     setToken(Ntoken);
-  }, []);
+  }, [token]);
 
   return (
     <nav className="flex justify-between items-center p-4 bg-blue-900 w-full">
