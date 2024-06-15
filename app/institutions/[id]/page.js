@@ -22,7 +22,10 @@ const Page = ({ params }) => {
     <div className="min-h-screen w-full flex flex-col py-6 overflow-x-scroll">
       <div className="p-4 bg-white rounded shadow-lg drop-shadow-2xl">
         {console.log(data)}
-        <table className="w-full divide-y divide-gray-200 border ">
+        <h1 className="font-extrabold text-3xl py-4 mb-4">
+          Location related information
+        </h1>
+        <table className="w-full divide-y divide-gray-200 border drop-shadow-lg ">
           <thead className="bg-gray-50">
             <tr>
               <th
