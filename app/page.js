@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import Link from "next/link";
 import { Loader } from "@googlemaps/js-api-loader";
+import { FaRegStar } from "react-icons/fa";
+import Cookies from "js-cookie";
 
 export default function Home() {
   const [value, setValue] = useState(undefined);
@@ -106,6 +108,53 @@ export default function Home() {
     });
   }, []);
 
+  const [isFavourite, setIsFavourite] = useState("false");
+  const [token, setToken] = useState();
+  const [userId, setUserId] = useState();
+
+  useEffect(() => {
+    const Ntoken = Cookies.get("token");
+    // console.log(Ntoken);
+    const Nid = localStorage.getItem("id");
+    setUserId(Nid);
+    setToken(Ntoken);
+  }, []);
+
+  // Add to favorites
+  const handleFavoriteClick = async (address, lat, lan) => {
+    if (!userId || !token) {
+      console.error("User is not logged in");
+      alert("Please login to add to favorites");
+      return;
+    }
+    console.log(address, lat, lan);
+    // else {
+    //   alert("Added to favorites");
+    // }
+    try {
+      const endpoint = `http://localhost:3000/user/favorite/${userId}`;
+      console.log(endpoint);
+      const response = await fetch(endpoint, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ address, lat, lan }),
+      });
+
+      if (response.ok) {
+        setIsFavourite(true); // update state on success
+        alert("Added to favorites");
+      } else {
+        console.log("Error:", response);
+      }
+    } catch (err) {
+      console.error("Server error:", err);
+    }
+  };
+
   return (
     <main className="w-full h-full box-border">
       <Head>
@@ -174,7 +223,19 @@ export default function Home() {
                     onCloseClick={handleInfoWindowClose}
                   >
                     <div>
-                      <h2 className="text-base font-bold">
+                      <div className="w-full flex justify-end items-center overflow-hidden px-2">
+                        <FaRegStar
+                          onClick={() => {
+                            handleFavoriteClick(
+                              selectedMarker.properties.STRASSE,
+                              selectedMarker.geometry.y,
+                              selectedMarker.geometry.x
+                            );
+                          }}
+                          className="h-6 w-6 hover:scale-125 hover:-rotate-45 transition-all cursor-pointer"
+                        />
+                      </div>
+                      <h2 className="text-base font-bold mb-3">
                         {selectedMarker.properties.TRAEGER
                           ? selectedMarker.properties.TRAEGER
                           : selectedMarker.properties.BEZEICHNUNG}
@@ -191,9 +252,14 @@ export default function Home() {
                           : "NO Number Available"}
                       </p>
                       {distance && <p>Distance: {distance}</p>}
-                      {driveTime && <p>Driving Duration: {driveTime}</p>}
+                      {driveTime && (
+                        <p className="mb-4">Driving Duration: {driveTime}</p>
+                      )}
                       <div className="">
-                        <Link href={`/institutions/${selectedMarker._id}`}>
+                        <Link
+                          className="p-2 rounded-md text-white bg-blue-600 "
+                          href={`/institutions/${selectedMarker._id}`}
+                        >
                           See more
                         </Link>
                       </div>
