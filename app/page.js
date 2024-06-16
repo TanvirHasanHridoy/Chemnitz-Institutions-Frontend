@@ -223,6 +223,19 @@ export default function Home() {
             {googleApiLoaded && (
               <GoogleMap
                 onLoad={onLoad}
+                options={{
+                  mapTypeControlOptions: { position: 2 },
+                  styles: [
+                    {
+                      featureType: "poi",
+                      stylers: [
+                        {
+                          visibility: "off",
+                        },
+                      ],
+                    },
+                  ],
+                }}
                 center={{ lat: 50.8285947, lng: 12.9216001 }}
                 zoom={12}
                 mapContainerClassName="w-[80%] h-2/3 mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
