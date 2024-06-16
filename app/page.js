@@ -6,9 +6,14 @@ import Link from "next/link";
 import { Loader } from "@googlemaps/js-api-loader";
 import { FaRegStar } from "react-icons/fa";
 import Cookies from "js-cookie";
-import { set } from "date-fns";
+import { TbHomeFilled } from "react-icons/tb";
+import { renderToStaticMarkup } from "react-dom/server";
 
 export default function Home() {
+  // Convert the React component to an SVG string
+  const svgString = encodeURIComponent(
+    renderToStaticMarkup(<TbHomeFilled color="black" size="10px" />)
+  );
   const [value, setValue] = useState(undefined);
   const options = [
     "Jugendberufshilfens",
@@ -222,6 +227,7 @@ export default function Home() {
                 mapContainerClassName="w-[80%] h-2/3 mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
               >
                 {map && userId && token && (
+                  // Home marker
                   <Marker
                     key={"Home"}
                     position={{
@@ -229,8 +235,8 @@ export default function Home() {
                       lng: lan,
                     }}
                     icon={{
-                      url: "https://maps.google.com/mapfiles/ms/icons/pink-dot.png",
-                      scaledSize: new window.google.maps.Size(40, 40),
+                      url: `data:image/svg+xml,${svgString}`,
+                      scaledSize: new window.google.maps.Size(32, 32),
                     }}
                     zIndex={1000}
                   ></Marker>
@@ -281,6 +287,27 @@ export default function Home() {
                       <h1 className="text-gray-500">
                         Type : {selectedMarker.properties.TYPE}{" "}
                       </h1>
+                      {selectedMarker.properties.ART && (
+                        <p className="font-semibold py-1 rounded-md mb-2">
+                          Art:{" "}
+                          <span
+                            className={`px-1 rounded-md ${
+                              selectedMarker.properties.ART === "Grundschule"
+                                ? "bg-red-400"
+                                : selectedMarker.properties.ART === "Oberschule"
+                                ? "bg-green-400"
+                                : selectedMarker.properties.ART ===
+                                  "Förderschule"
+                                ? "bg-blue-400"
+                                : selectedMarker.properties.ART === "Gymnasium"
+                                ? "bg-slate-400"
+                                : "bg-yellow-400"
+                            }`}
+                          >
+                            {selectedMarker.properties.ART}
+                          </span>{" "}
+                        </p>
+                      )}
                       <p>{selectedMarker.properties.STRASSE}</p>
                       <p>{selectedMarker.properties.PLZ}</p>
                       <p>
