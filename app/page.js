@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Loader } from "@googlemaps/js-api-loader";
 import { FaRegStar } from "react-icons/fa";
 import Cookies from "js-cookie";
+import { set } from "date-fns";
 
 export default function Home() {
   const [value, setValue] = useState(undefined);
@@ -20,6 +21,9 @@ export default function Home() {
     setSelectedMarker(null);
     console.log("User Selected Value - ", event.target.value);
   };
+  // setting home address
+  const [lat, setLat] = useState();
+  const [lan, setLan] = useState();
 
   const [data, setData] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
@@ -40,12 +44,18 @@ export default function Home() {
       });
   }, [value]);
 
-  const specificPoint = { lat: 50.8285947, lng: 12.9216001 };
+  // const [specificPoint, setSpecificPoint] = useState({
+  //   lat: 50.8285947,
+  //   lng: 12.9216001,
+  // });
+  const specificPoint = { lat: lat, lng: lan };
 
   const handleMarkerClick = (marker) => {
     setSelectedMarker(marker);
     const destination = { lat: marker.geometry.y, lng: marker.geometry.x };
-    calculateDistance(specificPoint, destination);
+    if (token && userId) {
+      calculateDistance(specificPoint, destination);
+    }
   };
 
   const handleInfoWindowClose = () => {
@@ -148,13 +158,41 @@ export default function Home() {
         setIsFavourite(true); // update state on success
         alert("Added to favorites");
       } else {
-        console.log("Error:", response);
+        const data = await response.json();
+        console.log("Error:", data);
       }
     } catch (err) {
       console.error("Server error:", err);
     }
   };
 
+  useEffect(() => {
+    console.log("user id from home:", userId);
+    if (userId) {
+      fetch(`http://localhost:3000/user/home/${userId}`, {
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`, // Add this line
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          // setHomeAddress(data.home.lat, data.home.lan);
+          setLat(data.home.lat);
+          setLan(data.home.lan);
+          console.log(data.home.lat, data.home.lan);
+          // console.log("lat and lan:", data.home.lat, data.home.lan);
+          // setSpecificPoint({ lat: data.home.lat, lng: data.home.lan });
+          // console.log(data.home);
+          // console.log("specific point is:", specificPoint);
+          // console.log({ lat: data.lat, lng: data.lan });
+        })
+        .catch((error) => {
+          console.error("Error while setting home:", error);
+        });
+    }
+  }, [userId, token]);
+  console.log("Home is:", lat, lan);
   return (
     <main className="w-full h-full box-border">
       <Head>
@@ -183,12 +221,12 @@ export default function Home() {
                 zoom={12}
                 mapContainerClassName="w-[80%] h-2/3 mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
               >
-                {map && (
+                {map && userId && token && (
                   <Marker
                     key={"Home"}
                     position={{
-                      lat: specificPoint.lat,
-                      lng: specificPoint.lng,
+                      lat: lat,
+                      lng: lan,
                     }}
                     icon={{
                       url: "https://maps.google.com/mapfiles/ms/icons/pink-dot.png",
@@ -251,13 +289,15 @@ export default function Home() {
                           ? selectedMarker.properties.TELEFON
                           : "NO Number Available"}
                       </p>
-                      {distance && <p>Distance: {distance}</p>}
-                      {driveTime && (
+                      {token && userId && distance && (
+                        <p>Distance: {distance}</p>
+                      )}
+                      {token && userId && driveTime && (
                         <p className="mb-4">Driving Duration: {driveTime}</p>
                       )}
-                      <div className="">
+                      <div className="flex justify-center items-center">
                         <Link
-                          className="p-2 rounded-md text-white bg-blue-600 "
+                          className="p-2 rounded-md text-white bg-blue-600 font-semibold hover:bg-red-700 transition-all"
                           href={`/institutions/${selectedMarker._id}`}
                         >
                           See more
