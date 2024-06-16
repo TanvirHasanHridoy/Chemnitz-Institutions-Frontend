@@ -8,6 +8,7 @@ import { FaRegStar } from "react-icons/fa";
 import Cookies from "js-cookie";
 import { TbHomeFilled } from "react-icons/tb";
 import { renderToStaticMarkup } from "react-dom/server";
+import Image from "next/image";
 
 export default function Home() {
   // Convert the React component to an SVG string
@@ -199,7 +200,7 @@ export default function Home() {
   }, [userId, token]);
   console.log("Home is:", lat, lan);
   return (
-    <main className="w-full h-full box-border">
+    <main className="w-full box-border">
       <Head>
         <title>Chemnitz institutions</title>
       </Head>
@@ -335,6 +336,53 @@ export default function Home() {
                 )}
               </GoogleMap>
             )}
+          </div>
+          <div className="w-full px-8 pt-4 pb-2 ">
+            <div className=" border-2 border-blue-400 p-2  rounded-2xl w-fit">
+              <h2 className="font-bold">***Please see the indications</h2>
+              <ul className="space-y-2">
+                <li>
+                  <Image
+                    alt="red"
+                    src="https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                    width={30}
+                    height={30}
+                    className="inline"
+                  ></Image>
+                  --- Schulens{" "}
+                </li>
+                <li>
+                  <Image
+                    alt="green"
+                    src="https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                    width={30}
+                    height={30}
+                    className="inline"
+                  ></Image>
+                  --- Kindertageseinrichtungens{" "}
+                </li>
+                <li>
+                  <Image
+                    alt="blue"
+                    src="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                    width={30}
+                    height={30}
+                    className="inline"
+                  ></Image>
+                  --- Jugendberufshilfens{" "}
+                </li>
+                <li>
+                  <Image
+                    alt="yellow"
+                    src="https://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+                    width={30}
+                    height={30}
+                    className="inline"
+                  ></Image>
+                  --- Schulsozialarbeits{" "}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
