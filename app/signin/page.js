@@ -1,12 +1,14 @@
 "use client";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { AuthContext } from "@/context/Context";
+
 export default function SignIn() {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
-  const [user, setUser] = useState();
 
+  const { authenticated, setAuthenticated } = useContext(AuthContext);
   // useEffect(() => {}, [user]);
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +37,8 @@ export default function SignIn() {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("id", res.data.id);
         alert("User logged successfully");
+        setAuthenticated(true);
+        console.log("authenticated is ", authenticated);
         window.location.href = "/";
       }
     } catch (err) {

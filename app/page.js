@@ -1,6 +1,6 @@
 "use client";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import Link from "next/link";
 import { Loader } from "@googlemaps/js-api-loader";
@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import { TbHomeFilled } from "react-icons/tb";
 import { renderToStaticMarkup } from "react-dom/server";
 import Image from "next/image";
+import { AuthContext } from "@/context/Context";
 
 export default function Home() {
   // Convert the React component to an SVG string
@@ -16,6 +17,8 @@ export default function Home() {
     renderToStaticMarkup(<TbHomeFilled color="black" size="10px" />)
   );
   const [value, setValue] = useState(undefined);
+
+  const { authenticated } = useContext(AuthContext);
   const options = [
     "Jugendberufshilfens",
     "Kindertageseinrichtungens",
@@ -54,15 +57,6 @@ export default function Home() {
   //   lat: 50.8285947,
   //   lng: 12.9216001,
   // });
-  const specificPoint = { lat: lat, lng: lan };
-
-  const handleMarkerClick = (marker) => {
-    setSelectedMarker(marker);
-    const destination = { lat: marker.geometry.y, lng: marker.geometry.x };
-    if (token && userId) {
-      calculateDistance(specificPoint, destination);
-    }
-  };
 
   const handleInfoWindowClose = () => {
     setSelectedMarker(null);
@@ -134,7 +128,7 @@ export default function Home() {
     const Nid = localStorage.getItem("id");
     setUserId(Nid);
     setToken(Ntoken);
-  }, []);
+  }, [authenticated]);
 
   // Add to favorites
   const handleFavoriteClick = async (address, lat, lan) => {
@@ -174,7 +168,7 @@ export default function Home() {
 
   useEffect(() => {
     console.log("user id from home:", userId);
-    if (userId) {
+    if (userId && token) {
       fetch(`http://localhost:3000/user/home/${userId}`, {
         credentials: "include",
         headers: {
@@ -199,6 +193,17 @@ export default function Home() {
     }
   }, [userId, token]);
   console.log("Home is:", lat, lan);
+
+  const specificPoint = { lat: lat, lng: lan };
+
+  const handleMarkerClick = (marker) => {
+    setSelectedMarker(marker);
+    const destination = { lat: marker.geometry.y, lng: marker.geometry.x };
+    if (token && userId) {
+      calculateDistance(specificPoint, destination);
+    }
+  };
+
   return (
     <main className="w-full box-border">
       <Head>

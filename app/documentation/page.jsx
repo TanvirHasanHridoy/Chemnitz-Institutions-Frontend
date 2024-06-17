@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import React from "react";
+import React, { useContext } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -10,7 +10,14 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { AuthContext } from "@/context/Context";
 const page = () => {
+  const { authenticated, setAuthenticated } = useContext(AuthContext);
+
+  function handleClick() {
+    setAuthenticated(!authenticated);
+  }
+  console.log("Is he authenticated? (doc) ", authenticated);
   return (
     <div className="p-20">
       <Button
@@ -50,6 +57,16 @@ const page = () => {
         <CarouselPrevious />
         <CarouselNext />
       </Carousel>
+      <div>
+        <button onClick={handleClick} className="p-2 bg-black text-white">
+          Click to see
+        </button>
+        {authenticated ? (
+          <p>Authenticated is true </p>
+        ) : (
+          <p>Authenticated is false </p>
+        )}
+      </div>
     </div>
   );
 };

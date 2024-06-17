@@ -1,12 +1,14 @@
 "use client";
 import Cookies from "js-cookie";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
+import { AuthContext } from "@/context/Context.js";
+
 const Navbar = () => {
+  const { authenticated, setAuthenticated } = useContext(AuthContext);
   const [token, setToken] = useState(null);
   const [id, setId] = useState(null);
   const [loading, setLoading] = useState(true);
-
   function handleLogout() {
     fetch("http://localhost:3000/auth/logout", {
       method: "POST",
@@ -15,7 +17,8 @@ const Navbar = () => {
       console.log("The data is");
       console.log(data);
       setToken(null);
-      // Cookies.remove("token");
+      Cookies.remove("token");
+      setAuthenticated(false);
     });
   }
 
@@ -26,6 +29,8 @@ const Navbar = () => {
     setToken(Ntoken);
     setLoading(false);
   }, []);
+
+  console.log("Is he authenticated? (nav)", authenticated);
 
   return (
     <nav className="flex justify-between items-center p-4 bg-blue-900 w-full">
