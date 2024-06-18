@@ -16,8 +16,8 @@ export default function Home() {
   const svgString = encodeURIComponent(
     renderToStaticMarkup(<TbHomeFilled color="black" size="10px" />)
   );
-  const [value, setValue] = useState(undefined);
 
+  const [value, setValue] = useState([]);
   const { authenticated } = useContext(AuthContext);
   const options = [
     "Jugendberufshilfens",
@@ -25,11 +25,20 @@ export default function Home() {
     "Schulens",
     "Schulsozialarbeits",
   ];
+
   const onOptionChangeHandler = (event) => {
-    setValue(event.target.value);
-    setSelectedMarker(null);
-    console.log("User Selected Value - ", event.target.value);
+    const option = event.target.value;
+    const checked = event.target.checked;
+
+    setValue((prev) => {
+      if (checked) {
+        return [...prev, option];
+      } else {
+        return prev.filter((item) => item !== option);
+      }
+    });
   };
+
   // setting home address
   const [lat, setLat] = useState();
   const [lan, setLan] = useState();
@@ -42,21 +51,29 @@ export default function Home() {
   const [googleApiLoaded, setGoogleApiLoaded] = useState(false);
 
   useEffect(() => {
-    const endpoint = value
-      ? `http://localhost:3000/${value.toLowerCase()}`
-      : "http://localhost:3000/all";
+    const fetchData = async () => {
+      setSelectedMarker(null);
+      let allData = [];
+      for (let option of value) {
+        const endpoint = `http://localhost:3000/${option.toLowerCase()}`;
+        const response = await fetch(endpoint);
+        const result = await response.json();
+        allData = [...allData, ...result];
+      }
+      setData(allData);
+    };
 
-    fetch(endpoint)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-      });
+    if (value.length > 0) {
+      fetchData();
+    } else {
+      const endpoint = "http://localhost:3000/all";
+      fetch(endpoint)
+        .then((res) => res.json())
+        .then((data) => {
+          setData(data);
+        });
+    }
   }, [value]);
-
-  // const [specificPoint, setSpecificPoint] = useState({
-  //   lat: 50.8285947,
-  //   lng: 12.9216001,
-  // });
 
   const handleInfoWindowClose = () => {
     setSelectedMarker(null);
@@ -124,7 +141,6 @@ export default function Home() {
 
   useEffect(() => {
     const Ntoken = Cookies.get("token");
-    // console.log(Ntoken);
     const Nid = localStorage.getItem("id");
     setUserId(Nid);
     setToken(Ntoken);
@@ -137,13 +153,9 @@ export default function Home() {
       alert("Please login to add to favorites");
       return;
     }
-    console.log(address, lat, lan);
-    // else {
-    //   alert("Added to favorites");
-    // }
+
     try {
       const endpoint = `http://localhost:3000/user/favorite/${userId}`;
-      console.log(endpoint);
       const response = await fetch(endpoint, {
         method: "POST",
         credentials: "include",
@@ -167,32 +179,23 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log("user id from home:", userId);
     if (userId && token) {
       fetch(`http://localhost:3000/user/home/${userId}`, {
         credentials: "include",
         headers: {
-          Authorization: `Bearer ${token}`, // Add this line
+          Authorization: `Bearer ${token}`,
         },
       })
         .then((res) => res.json())
         .then((data) => {
-          // setHomeAddress(data.home.lat, data.home.lan);
           setLat(data.home.lat);
           setLan(data.home.lan);
-          console.log(data.home.lat, data.home.lan);
-          // console.log("lat and lan:", data.home.lat, data.home.lan);
-          // setSpecificPoint({ lat: data.home.lat, lng: data.home.lan });
-          // console.log(data.home);
-          // console.log("specific point is:", specificPoint);
-          // console.log({ lat: data.lat, lng: data.lan });
         })
         .catch((error) => {
           console.error("Error while setting home:", error);
         });
     }
   }, [userId, token]);
-  console.log("Home is:", lat, lan);
 
   const specificPoint = { lat: lat, lng: lan };
   const [googleGeoResponse, setGoogleGeoResponse] = useState();
@@ -201,10 +204,8 @@ export default function Home() {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${marker.geometry.y},${marker.geometry.x}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
     const response = await fetch(url);
     const data = await response.json();
-    console.log("data is :", data);
     if (data.results && data.results[0]) {
       setGoogleGeoResponse(data.results[0]);
-      console.log("the geodata is set for the marker ", data.results[0]);
     } else {
       console.error("Error fetching location information");
     }
@@ -222,18 +223,73 @@ export default function Home() {
       <div>
         <div className="flex w-full min-h-screen flex-col items-center justify-between">
           <div className="h-screen w-full bg-[#dae6d5] py-10">
-            <div className="w-60 ml-40 block mb-10">
-              <select
-                name="institutions"
-                id="institutions"
-                onChange={onOptionChangeHandler}
-                className="block w-full mt-1 p-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 cursor-pointer sm:text-sm font-medium"
-              >
-                <option value={"all"}>All institutions</option>
-                {options.map((option, index) => {
-                  return <option key={index}>{option}</option>;
-                })}
-              </select>
+            <div className="flex justify-between items-start px-40 mb-4">
+              {/* filtering options */}
+              <div className="w-72 block mb-10">
+                <h2 className="text-xl font-bold "> Filter options :</h2>
+                {options.map((option, index) => (
+                  <div key={index} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id={option}
+                      value={option}
+                      onChange={onOptionChangeHandler}
+                      className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out"
+                    />
+                    <label htmlFor={option} className="ml-2 text-gray-700">
+                      {option}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              {/* New indications */}
+              <div className=" border-2 border-blue-400 p-2  rounded-2xl w-fit">
+                <h2 className="font-bold text-sm mb-2">
+                  ***Please see the indications
+                </h2>
+                <ul className="space-y-1 text-xs ">
+                  <li>
+                    <Image
+                      alt="red"
+                      src="https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                      width={30}
+                      height={30}
+                      className="inline"
+                    ></Image>
+                    --- Schulens{" "}
+                  </li>
+                  <li>
+                    <Image
+                      alt="green"
+                      src="https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                      width={30}
+                      height={30}
+                      className="inline"
+                    ></Image>
+                    --- Kindertageseinrichtungens{" "}
+                  </li>
+                  <li>
+                    <Image
+                      alt="blue"
+                      src="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                      width={30}
+                      height={30}
+                      className="inline"
+                    ></Image>
+                    --- Jugendberufshilfens{" "}
+                  </li>
+                  <li>
+                    <Image
+                      alt="yellow"
+                      src="https://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+                      width={30}
+                      height={30}
+                      className="inline"
+                    ></Image>
+                    --- Schulsozialarbeits{" "}
+                  </li>
+                </ul>
+              </div>
             </div>
             {googleApiLoaded && (
               <GoogleMap
@@ -383,51 +439,7 @@ export default function Home() {
             )}
           </div>
           <div className="w-full px-8 pt-4 pb-2 ">
-            <div className=" border-2 border-blue-400 p-2  rounded-2xl w-fit">
-              <h2 className="font-bold">***Please see the indications</h2>
-              <ul className="space-y-2">
-                <li>
-                  <Image
-                    alt="red"
-                    src="https://maps.google.com/mapfiles/ms/icons/red-dot.png"
-                    width={30}
-                    height={30}
-                    className="inline"
-                  ></Image>
-                  --- Schulens{" "}
-                </li>
-                <li>
-                  <Image
-                    alt="green"
-                    src="https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-                    width={30}
-                    height={30}
-                    className="inline"
-                  ></Image>
-                  --- Kindertageseinrichtungens{" "}
-                </li>
-                <li>
-                  <Image
-                    alt="blue"
-                    src="https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                    width={30}
-                    height={30}
-                    className="inline"
-                  ></Image>
-                  --- Jugendberufshilfens{" "}
-                </li>
-                <li>
-                  <Image
-                    alt="yellow"
-                    src="https://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
-                    width={30}
-                    height={30}
-                    className="inline"
-                  ></Image>
-                  --- Schulsozialarbeits{" "}
-                </li>
-              </ul>
-            </div>
+            {/* previous  indications */}
           </div>
         </div>
       </div>
