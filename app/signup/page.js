@@ -7,6 +7,7 @@ import { z } from "zod";
 import { ImSpinner2 } from "react-icons/im";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import Map from "@/ui/Map";
 
 const libraries = ["places"];
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -17,16 +18,16 @@ export default function SignUp() {
     googleMapsApiKey,
     libraries,
   });
-  // form variables
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [address, setAddress] = useState("");
-  const [lat, setLat] = useState("");
-  const [lan, setLan] = useState("");
+  const [lat, setLat] = useState(null);
+  const [lng, setLng] = useState(null);
+  const [isAddressSelected, setIsAddressSelected] = useState(false);
 
-  // Schema using Zod
   const signUpSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
     email: z.string().email("Invalid email address"),
@@ -34,14 +35,11 @@ export default function SignUp() {
       .string()
       .min(8, "Password must be at least 8 characters")
       .max(20, "Password must be at most 20 characters"),
-    confirmPassword: z.string().refine((data, context) => data === password, {
+    confirmPassword: z.string().refine((data) => data === password, {
       message: "Passwords do not match",
     }),
   });
 
-  const [isAddressSelected, setIsAddressSelected] = useState(false);
-
-  // refs
   const formRef = useRef(null);
   const autocompleteRef = useRef(null);
 
@@ -50,46 +48,41 @@ export default function SignUp() {
     setIsAddressSelected(true);
     const userSelectedPlace = autocompleteRef.current.getPlace();
     const { lat, lng } = userSelectedPlace.geometry.location;
-    console.log("The object is: ", userSelectedPlace);
-    console.log(
-      "The address is ",
-      document.getElementById("userSelectedAddress").value
-    );
-    console.log("Latitude:", lat());
-    console.log("Longitude:", lng());
     setLat(lat());
-    setLan(lng());
+    setLng(lng());
+  };
+
+  const handleMapClick = (address, lat, lng) => {
+    setAddress(address);
+    setLat(lat);
+    setLng(lng);
+    setIsAddressSelected(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isAddressSelected) {
-      alert("Please select an address from the suggestions.");
+      alert("Please select an address from the suggestions or map.");
       return;
     }
+
     const formData = {
       name: name,
       email: email,
       password: password,
       address: address,
       lat: lat,
-      lan: lan,
+      lan: lng,
     };
-    console.log(formData);
-    const formDataCheck = {
-      name: name,
-      email: email,
-      password: password,
-      confirmPassword: confirmPassword,
-      address: address,
-      lat: lat,
-      lan: lan,
-    };
-    // Validatng the form data against the schema
-    const validation = signUpSchema.safeParse(formDataCheck);
 
-    console.log("validation");
-    console.log(validation);
+    const formDataCheck = {
+      ...formData,
+      confirmPassword,
+    };
+
+    const validation = signUpSchema.safeParse(formDataCheck);
+    console.log("address, lat, lng before submit");
+    console.log(formData);
     if (!validation.success) {
       const errorMessages = validation.error.errors.map((err) => err.message);
       errorMessages.forEach((msg) =>
@@ -101,16 +94,13 @@ export default function SignUp() {
       return;
     }
 
-    // WITH AXIOS
     try {
-      const res = await axios.post("http://localhost:3000/auth/createuser", {
-        ...formData,
-      });
+      const res = await axios.post(
+        "http://localhost:3000/auth/createuser",
+        formData
+      );
       if (res.status === 201) {
-        toast.success("User created successfully", {
-          duration: 4000,
-        });
-        console.log("User created successfully");
+        toast.success("User created successfully", { duration: 4000 });
         window.location.href = "/signin";
       }
     } catch (err) {
@@ -140,85 +130,93 @@ export default function SignUp() {
       <Head>
         <title>Sign Up</title>
       </Head>
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
-        <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-gray-700">Name</label>
-            <input
-              type="text"
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700">Password</label>
-            <input
-              type="password"
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700">Confirm Password</label>
-            <input
-              type="password"
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700">Address</label>
-            <Autocomplete
-              onLoad={(autocomplete) => {
-                autocomplete.setComponentRestrictions({ country });
-                autocomplete.setTypes(["address"]);
-                autocompleteRef.current = autocomplete;
-              }}
-              onPlaceChanged={() => {
-                const place = autocompleteRef.current.getPlace();
-                handleSelect(place.formatted_address);
-              }}
-            >
+      <div className="p-2 gap-2 flex justify-center relative">
+        <div className="bg-white p-8 rounded-lg shadow-lg w-[400px] max-w-md">
+          <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+          <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-gray-700">Name</label>
               <input
-                id="userSelectedAddress"
-                type="text"
-                value={address}
-                onChange={(e) => {
-                  setAddress(e.target.value);
-                  setIsAddressSelected(false);
-                }}
                 required
+                type="text"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
               />
-            </Autocomplete>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-          >
-            Sign Up
-          </button>
-        </form>
-        <p className="mt-4 text-center">
-          Already have an account?{" "}
-          <Link href="/signin" className="text-blue-600 hover:underline">
-            Log in
-          </Link>
-        </p>
+            </div>
+            <div>
+              <label className="block text-gray-700">Email</label>
+              <input
+                required
+                type="email"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Password</label>
+              <input
+                required
+                type="password"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Confirm Password</label>
+              <input
+                required
+                type="password"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Address</label>
+              <Autocomplete
+                onLoad={(autocomplete) => {
+                  autocomplete.setComponentRestrictions({ country });
+                  autocomplete.setTypes(["address"]);
+                  autocompleteRef.current = autocomplete;
+                }}
+                onPlaceChanged={() => {
+                  const place = autocompleteRef.current.getPlace();
+                  handleSelect(place.formatted_address);
+                }}
+              >
+                <input
+                  id="userSelectedAddress"
+                  type="text"
+                  value={address}
+                  onChange={(e) => {
+                    setAddress(e.target.value);
+                    setIsAddressSelected(false);
+                  }}
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </Autocomplete>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+            >
+              Sign Up
+            </button>
+          </form>
+          <p className="mt-4 text-center">
+            Already have an account?{" "}
+            <Link href="/signin" className="text-blue-600 hover:underline">
+              Log in
+            </Link>
+          </p>
+        </div>
+        <Map
+          height="h-full"
+          width="w-[400px]"
+          coordinates={lat && lng ? { lat, lng } : null}
+          onMapClick={handleMapClick}
+        />
       </div>
     </div>
   );

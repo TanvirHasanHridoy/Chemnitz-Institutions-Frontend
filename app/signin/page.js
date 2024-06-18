@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import Head from "next/head";
 import { useContext, useState } from "react";
@@ -84,6 +85,7 @@ export default function SignIn() {
           <div>
             <label className="block text-gray-700">Email</label>
             <input
+              required
               onChange={(e) => setEmail(e.target.value)}
               type="text"
               value={email}
@@ -94,6 +96,7 @@ export default function SignIn() {
           <div>
             <label className="block text-gray-700">Password</label>
             <input
+              required
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               value={password}
