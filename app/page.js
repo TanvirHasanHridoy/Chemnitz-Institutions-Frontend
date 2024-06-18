@@ -10,6 +10,7 @@ import { TbHomeFilled } from "react-icons/tb";
 import { renderToStaticMarkup } from "react-dom/server";
 import Image from "next/image";
 import { AuthContext } from "@/context/Context";
+import toast from "react-hot-toast";
 
 export default function Home() {
   // Convert the React component to an SVG string
@@ -150,7 +151,10 @@ export default function Home() {
   const handleFavoriteClick = async (address, lat, lan) => {
     if (!userId || !token) {
       console.error("User is not logged in");
-      alert("Please login to add to favorites");
+      toast.error("Please login to add to favorites", {
+        duration: 3000,
+        position: "top-center",
+      });
       return;
     }
 
@@ -168,7 +172,10 @@ export default function Home() {
 
       if (response.ok) {
         setIsFavourite(true); // update state on success
-        alert("Added to favorites");
+        toast.success("Added to favorites", {
+          duration: 3000,
+          position: "top-center",
+        });
       } else {
         const data = await response.json();
         console.log("Error:", data);
