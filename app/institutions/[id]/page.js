@@ -1,8 +1,9 @@
 "use client";
-import { notFound } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import ErrorComponent from "@/ui/Error";
 import { ImSpinner2 } from "react-icons/im";
+import { toast } from "react-hot-toast";
 
 const Page = ({ params }) => {
   const [data, setData] = useState(null);
@@ -25,7 +26,12 @@ const Page = ({ params }) => {
       .catch((error) => {
         console.error("Error:", error);
         setError(error);
-        notFound(); // This will redirect to the 404 page
+        toast.error("Nothing found", {
+          duration: 4000,
+          position: "bottom-right",
+        });
+        // Instead of notFound(), set the error state
+        setLoading(false);
       });
   }, [params.id]);
 

@@ -3,6 +3,7 @@ import Head from "next/head";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "@/context/Context";
+import toast from "react-hot-toast";
 
 export default function SignIn() {
   const [email, setEmail] = useState();
@@ -36,7 +37,11 @@ export default function SignIn() {
         // res.json();
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("id", res.data.id);
-        alert("User logged successfully");
+        // alert("User logged successfully");
+        toast.success("User logged successfully", {
+          duration: 4000,
+          position: "bottom-right",
+        });
         setAuthenticated(true);
         console.log("authenticated is ", authenticated);
         window.location.href = "/";

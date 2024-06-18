@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { AuthContext } from "@/context/Context.js";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { authenticated, setAuthenticated } = useContext(AuthContext);
@@ -18,6 +19,9 @@ const Navbar = () => {
       console.log("The data is");
       console.log(data);
       setToken(null);
+      toast.success("User logged out successfully", {
+        duration: 4000,
+      });
       Cookies.remove("token");
       setAuthenticated(false);
     });
