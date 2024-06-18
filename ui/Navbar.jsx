@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import React, { useContext, useEffect, useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { AuthContext } from "@/context/Context.js";
+import Link from "next/link";
 
 const Navbar = () => {
   const { authenticated, setAuthenticated } = useContext(AuthContext);
@@ -35,16 +36,15 @@ const Navbar = () => {
   return (
     <nav className="flex justify-between items-center p-4 bg-blue-900 w-full">
       <div className="flex space-x-4">
-        <a href="/" className="text-white">
+        <Link className="text-white" href="/">
           Home
-        </a>
-        <a href="/documentation" className="text-white">
+        </Link>
+        <Link className="text-white" href="/documentation">
           Documentation
-        </a>
-        <a href="/impressium" className="text-white">
+        </Link>
+        <Link className="text-white" href="/impressium">
           Impressium
-        </a>
-        {/* Add more links as needed */}
+        </Link>
       </div>
       <div>
         {loading ? (

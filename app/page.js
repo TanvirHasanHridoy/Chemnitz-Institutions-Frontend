@@ -195,9 +195,19 @@ export default function Home() {
   console.log("Home is:", lat, lan);
 
   const specificPoint = { lat: lat, lng: lan };
-
-  const handleMarkerClick = (marker) => {
+  const [googleGeoResponse, setGoogleGeoResponse] = useState();
+  const handleMarkerClick = async (marker) => {
     setSelectedMarker(marker);
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${marker.geometry.y},${marker.geometry.x}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log("data is :", data);
+    if (data.results && data.results[0]) {
+      setGoogleGeoResponse(data.results[0]);
+      console.log("the geodata is set for the marker ", data.results[0]);
+    } else {
+      console.error("Error fetching location information");
+    }
     const destination = { lat: marker.geometry.y, lng: marker.geometry.x };
     if (token && userId) {
       calculateDistance(specificPoint, destination);
@@ -229,7 +239,7 @@ export default function Home() {
               <GoogleMap
                 onLoad={onLoad}
                 options={{
-                  mapTypeControlOptions: { position: 2 },
+                  // mapTypeControlOptions: { position: 2, },
                   styles: [
                     {
                       featureType: "poi",
@@ -329,6 +339,7 @@ export default function Home() {
                       )}
                       <p>{selectedMarker.properties.STRASSE}</p>
                       <p>{selectedMarker.properties.PLZ}</p>
+
                       <p>
                         Phone :{" "}
                         {selectedMarker.properties.PLZ
@@ -341,6 +352,18 @@ export default function Home() {
                       {token && userId && driveTime && (
                         <p className="mb-4">Driving Duration: {driveTime}</p>
                       )}
+                      <div className="mt-2 border bg-slate-100 w-fit p-1 mb-3">
+                        {/* <p>Compound Code: {googleGeoResponse.compound_code}</p>
+                        <p>Global Code: {googleGeoResponse.global_code}</p> */}
+                        {googleGeoResponse &&
+                        googleGeoResponse.formatted_address ? (
+                          <p>
+                            Google's address:{" "}
+                            {googleGeoResponse.formatted_address}
+                          </p>
+                        ) : null}
+                      </div>
+
                       <div className="flex justify-center items-center">
                         <Link
                           className="p-2 rounded-md text-white bg-blue-600 font-semibold hover:bg-red-700 transition-all"
