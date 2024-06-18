@@ -1,21 +1,44 @@
 "use client";
+import { notFound } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import ErrorComponent from "@/ui/Error";
+import { ImSpinner2 } from "react-icons/im";
 
 const Page = ({ params }) => {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const endpoint = `http://localhost:3000/all/${params.id}`;
     fetch(endpoint)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
       .then((data) => {
         setData(data);
+        setLoading(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setError(error);
+        notFound(); // This will redirect to the 404 page
+      });
   }, [params.id]);
 
-  if (!data) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex justify-center items-center">
+        <ImSpinner2 className="animate-spin h-12 w-12" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorComponent message="Data not found or an error occurred" />;
   }
 
   return (
@@ -25,7 +48,7 @@ const Page = ({ params }) => {
         <h1 className="font-extrabold text-3xl py-4 mb-4">
           Location related information
         </h1>
-        <table className="w-full divide-y divide-gray-200 border drop-shadow-lg ">
+        <table className="w-full divide-y divide-gray-200 border drop-shadow-lg">
           <thead className="bg-gray-50">
             <tr>
               <th

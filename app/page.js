@@ -342,9 +342,13 @@ export default function Home() {
 
                       <p>
                         Phone :{" "}
-                        {selectedMarker.properties.PLZ
-                          ? selectedMarker.properties.TELEFON
-                          : "NO Number Available"}
+                        {selectedMarker.properties.PLZ ? (
+                          <a href={`tel:${selectedMarker.properties.TELEFON}`}>
+                            {selectedMarker.properties.TELEFON}
+                          </a>
+                        ) : (
+                          "NO Number Available"
+                        )}
                       </p>
                       {token && userId && distance && (
                         <p>Distance: {distance}</p>
