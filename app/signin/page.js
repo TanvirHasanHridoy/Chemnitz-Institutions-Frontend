@@ -1,89 +1,75 @@
 "use client";
 import Head from "next/head";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "@/context/Context";
 import toast from "react-hot-toast";
+import { z } from "zod";
+import Link from "next/link";
+
+// Schema using Zod
+const signInSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(20, "Password must be at most 20 characters"),
+});
 
 export default function SignIn() {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const { authenticated, setAuthenticated } = useContext(AuthContext);
-  // useEffect(() => {}, [user]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = {
       email: email,
       password: password,
     };
-    console.log(formData);
+
+    // Validatng the form data against the schema
+    const validation = signInSchema.safeParse(formData);
+    if (!validation.success) {
+      const errorMessages = validation.error.errors.map((err) => err.message);
+      errorMessages.forEach((msg) =>
+        toast.error(msg, {
+          duration: 4000,
+          position: "bottom-right",
+        })
+      );
+      return;
+    }
 
     // WITH AXIOS
     try {
-      console.log("trying to log in");
       const res = await axios.post(
         "http://localhost:3000/auth/login",
-        {
-          ...formData,
-        },
-        {
-          withCredentials: true,
-        }
+        formData,
+        { withCredentials: true }
       );
-      console.log("api hit");
+
       if (res.status === 200) {
-        console.log("User logged successfully");
-        // res.json();
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("id", res.data.id);
-        // alert("User logged successfully");
         toast.success("User logged successfully", {
           duration: 4000,
           position: "bottom-right",
         });
         setAuthenticated(true);
-        console.log("authenticated is ", authenticated);
         window.location.href = "/";
       }
     } catch (err) {
-      console.error("err.response");
-      // console.error(err.response);
-      // alert(err.res.data.message);
+      toast.error(
+        "Failed to log in. Please check your credentials and try again.",
+        {
+          duration: 4000,
+          position: "bottom-right",
+        }
+      );
+      console.error(err.response);
     }
-
-    // fetch("http://localhost:3000/user/login", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(formData),
-    // })
-    //   .then((response) => {
-    //     if (response.ok) {
-    //       return response.json();
-    //     } else {
-    //       throw new Error("Response not OK");
-    //     }
-    //   })
-    //   .then((data) => {
-    //     if (data.token && data.id) {
-    //       console.log("token is :", data.token);
-    //       localStorage.setItem("token", data.token);
-    //       localStorage.setItem("id", data.id);
-    //       alert("User logged successfully");
-    //       setUser(data);
-    //       // window.history.pushState({}, "", "/signin");
-    //       // window.dispatchEvent(new Event("popstate"));
-    //       // window.location.href = "/test";
-    //     } else {
-    //       throw new Error("Token or ID missing in response");
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error("An error occurred:", error);
-    //     alert(error.message);
-    //   });
   };
 
   return (
@@ -100,6 +86,7 @@ export default function SignIn() {
             <input
               onChange={(e) => setEmail(e.target.value)}
               type="text"
+              value={email}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
@@ -109,6 +96,7 @@ export default function SignIn() {
             <input
               onChange={(e) => setPassword(e.target.value)}
               type="password"
+              value={password}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
@@ -120,19 +108,21 @@ export default function SignIn() {
             Sign In
           </button>
         </form>
-        <p className="mt-4 text-center">
+        <div className="mt-6">
+          {/* <p className="mt-4 text-center">
           Forget your password?{" "}
           <a href="/recover_password" className="text-blue-600 hover:underline">
             Recover Password
           </a>
         </p>
-        <h2 className="h-16 w-full flex justify-center items-center">OR</h2>
-        <p className="text-center">
-          Don't have an account?{" "}
-          <a href="/signup" className="text-blue-600 hover:underline">
-            Sign up now!
-          </a>
-        </p>
+        <h2 className="h-16 w-full flex justify-center items-center">OR</h2> */}
+          <p className="text-center">
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-blue-600 hover:underline">
+              Sign up now!
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

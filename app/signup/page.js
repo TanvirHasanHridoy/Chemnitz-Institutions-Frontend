@@ -3,6 +3,11 @@ import Head from "next/head";
 import { useState, useRef } from "react";
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import axios from "axios";
+import { z } from "zod";
+import { ImSpinner2 } from "react-icons/im";
+import toast from "react-hot-toast";
+import Link from "next/link";
+
 const libraries = ["places"];
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const country = "DE";
@@ -16,9 +21,23 @@ export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [address, setAddress] = useState("");
   const [lat, setLat] = useState("");
   const [lan, setLan] = useState("");
+
+  // Schema using Zod
+  const signUpSchema = z.object({
+    name: z.string().min(3, "Name must be at least 3 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(20, "Password must be at most 20 characters"),
+    confirmPassword: z.string().refine((data, context) => data === password, {
+      message: "Passwords do not match",
+    }),
+  });
 
   const [isAddressSelected, setIsAddressSelected] = useState(false);
 
@@ -57,55 +76,30 @@ export default function SignUp() {
       lan: lan,
     };
     console.log(formData);
-    // Add your form submission logic here
-    // Add your form submission logic here, for example:
-    // try {
-    //   const response = await fetch("http://localhost:3000/user/createuser", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(formData),
-    //   }).then((res) => res.json());
-    //   if (response.ok) {
-    //     console.log("Success:", response.json());
-    //     alert("User created successfully");
-    //     console.log(response);
-    //   } else {
-    //     alert(response.msg);
-    //     // if (response.status === 400) throw new Error("400, Very bad request");
-    //   }
-    // } catch (error) {
-    //   console.error("Error while fetching:", error);
-    //   alert("");
-    // }
+    const formDataCheck = {
+      name: name,
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+      address: address,
+      lat: lat,
+      lan: lan,
+    };
+    // Validatng the form data against the schema
+    const validation = signUpSchema.safeParse(formDataCheck);
 
-    // fetch("http://localhost:3000/auth/createuser", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(formData),
-    // })
-    //   .then((response) => {
-    //     if (response.ok) {
-    //       console.log("Success:", response.json());
-    //       alert("User created successfully");
-    //       console.log(response);
-    //       // window.history.pushState({}, "", "/signin");
-    //       // window.dispatchEvent(new Event("popstate"));
-    //       window.location.href = "/signin";
-    //     } else {
-    //       response.json().then((data) => {
-    //         console.log("Error while adding user:", data);
-    //         alert(data.msg);
-    //       });
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error("An error occured:", error);
-    //     alert(error.msg);
-    //   });
+    console.log("validation");
+    console.log(validation);
+    if (!validation.success) {
+      const errorMessages = validation.error.errors.map((err) => err.message);
+      errorMessages.forEach((msg) =>
+        toast.error(msg, {
+          duration: 4000,
+          position: "bottom-right",
+        })
+      );
+      return;
+    }
 
     // WITH AXIOS
     try {
@@ -113,28 +107,30 @@ export default function SignUp() {
         ...formData,
       });
       if (res.status === 201) {
+        toast.success("User created successfully", {
+          duration: 4000,
+        });
         console.log("User created successfully");
-        alert("User created successfully");
         window.location.href = "/signin";
       }
     } catch (err) {
       console.error(err.response);
-      alert(err.response.data.message);
+      toast.error(err.response.data.message);
     }
   };
 
   if (loadError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        Error loading maps
+        Error while getting maps data
       </div>
     );
   }
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        Loading...
+      <div className="h-screen w-full flex justify-center items-center">
+        <ImSpinner2 className="animate-spin h-12 w-12" />
       </div>
     );
   }
@@ -181,6 +177,7 @@ export default function SignUp() {
               type="password"
               required
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
           <div>
@@ -218,9 +215,9 @@ export default function SignUp() {
         </form>
         <p className="mt-4 text-center">
           Already have an account?{" "}
-          <a href="/signin" className="text-blue-600 hover:underline">
+          <Link href="/signin" className="text-blue-600 hover:underline">
             Log in
-          </a>
+          </Link>
         </p>
       </div>
     </div>
