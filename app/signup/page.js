@@ -130,7 +130,7 @@ export default function SignUp() {
       <Head>
         <title>Sign Up</title>
       </Head>
-      <div className="p-2 gap-2 flex justify-center relative">
+      <div className="p-2 gap-2 flex flex-col md:flex-row justify-center relative">
         <div className="bg-white p-8 rounded-lg shadow-lg w-[400px] max-w-md">
           <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
           <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
@@ -213,7 +213,7 @@ export default function SignUp() {
         </div>
         <Map
           height="h-full"
-          width="w-[400px]"
+          width="w-[400px] h-[400px] md:w-[400px] md:h-full mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
           coordinates={lat && lng ? { lat, lng } : null}
           onMapClick={handleMapClick}
         />
