@@ -142,7 +142,7 @@ const Profile = () => {
           )}
         </div>
         <button
-          className="p-2 rounded-md bg-red-600 font-bold text-white"
+          className="p-2  bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-white"
           onClick={getRoute}
         >
           GET ROUTE

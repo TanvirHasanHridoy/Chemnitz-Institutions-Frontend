@@ -102,7 +102,7 @@ const Navbar = () => {
         {/* RIGHT LINKS */}
         <div className="space-x-5">
           {loading ? (
-            <div className="bg-[#d82174b5] h-12 w-26 md:w-32 text-white font-bold p-3 rounded-lg flex justify-center items-center">
+            <div className="bg-[#090857fb] h-12 w-26 md:w-32 text-white font-bold p-3 rounded-lg flex justify-center items-center">
               <ImSpinner2 className="animate-spin" />
             </div>
           ) : token && id ? (
@@ -110,7 +110,7 @@ const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-12 w-26 md:w-32 font-bold"
+                  className="h-12 w-26 md:w-32 font-bold transition-all duration-200 ease-in-out hover:bg-[#d82174b5] hover:text-white"
                 >
                   PROFILE
                 </Button>
@@ -149,7 +149,7 @@ const Navbar = () => {
               onClick={() => {
                 window.location.href = "http://localhost:3001/signin";
               }}
-              className="bg-[#d82174b5] h-12 w-26 md:w-32 text-white font-bold p-3 rounded-lg"
+              className="bg-[#d82174b5] h-12 w-26 md:w-32 text-white font-bold p-3 rounded-lg transition-all duration-200 ease-in-out hover:bg-[#3bb691fb] hover:text-white"
             >
               LOGIN
             </button>
