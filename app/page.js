@@ -28,6 +28,8 @@ export default function Home() {
   ];
 
   const onOptionChangeHandler = (event) => {
+    console.log("Event is ", event);
+    console.log("Event value is ", event.target.value);
     const option = event.target.value;
     const checked = event.target.checked;
 

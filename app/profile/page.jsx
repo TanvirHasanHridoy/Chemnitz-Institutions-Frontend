@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   GoogleMap,
   LoadScript,
@@ -11,6 +11,7 @@ import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 import { set } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { AuthContext } from "@/context/Context";
 
 const Profile = () => {
   const [googleApiLoaded, setGoogleApiLoaded] = useState(false);
@@ -20,7 +21,7 @@ const Profile = () => {
   let destination = { lat: 6.5544, lng: 3.3342 };
   const center = { lat: 6.5244, lng: 3.3792 };
   const directionsService = useRef(null);
-
+  const { authenticated, setAuthenticated } = useContext(AuthContext);
   const onLoad = (mapInstance) => {
     setMap(mapInstance);
   };
@@ -49,6 +50,11 @@ const Profile = () => {
   const [favoriteAvailable, setFavoriteAvailable] = useState(false);
 
   useEffect(() => {
+    console.log("authenticated status from profile page", authenticated);
+    if (!authenticated) {
+      window.location.href = "/signin";
+      return;
+    }
     const id = localStorage.getItem("id");
     const token = Cookies.get("token");
     fetch(`http://localhost:3000/user/getuser/${id}`, {
