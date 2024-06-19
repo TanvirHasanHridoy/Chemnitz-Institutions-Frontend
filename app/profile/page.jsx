@@ -127,7 +127,7 @@ const Profile = () => {
 
   return (
     <div className="h-full w-[90%] mx-auto gap-6 flex flex-col items-center py-4 justify-center ">
-      <div className="w-[400px] md:w-[80%] h-[400px] shadow-md  px-8 pt-6 ">
+      <div className="w-[350px] sm:w-[80%] h-[400px] shadow-md  px-8 pt-6 ">
         <h1 className="text-2xl font-bold text-center mb-8 md:mb-12">
           User Profile
         </h1>
@@ -135,14 +135,18 @@ const Profile = () => {
           <h2 className="font-bold text-base mb-2">Name: {name}</h2>
           <h2 className="font-bold text-base mb-2">Email: {email}</h2>
           <h2 className="font-bold text-base mb-2">Home address: {address}</h2>
-          {favoriteAddress && (
+          {favoriteAddress ? (
             <h2 className="font-bold text-base mb-2">
               {`Favorite address: ${favoriteAddress} (${favoriteLat}, ${favoriteLng})`}
+            </h2>
+          ) : (
+            <h2 className="font-bold text-base mb-2">
+              {`Favorite address: Not set`}
             </h2>
           )}
         </div>
         <button
-          className="p-2  bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-white"
+          className="p-2  bg-blue-600py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-white"
           onClick={getRoute}
         >
           GET ROUTE
@@ -166,7 +170,7 @@ const Profile = () => {
           }}
           center={{ lat: 50.8285947, lng: 12.9216001 }}
           zoom={12}
-          mapContainerClassName="w-[400px] h-[1000px] md:w-[80%] mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
+          mapContainerClassName="w-[350px] h-[600px] sm:w-[80%] mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
         >
           {directions && directions.status === "OK" && (
             <DirectionsRenderer directions={directions} />

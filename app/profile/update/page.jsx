@@ -18,17 +18,21 @@ const country = "DE";
 export default function UpdateInfo() {
   const [id, setId] = useState("");
   const [token, setToken] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const { authenticated, setAuthenticated } = useContext(AuthContext);
   useEffect(() => {
-    // console.log("authenticated status from update", authenticated);
-    // if (!authenticated) {
-    //   window.location.href = "/signin";
-    // }
+    console.log("authenticated status from update", authenticated);
+    if (!authenticated) {
+      window.location.href = "/signin";
+    }
     const id = localStorage.getItem("id");
     const token = Cookies.get("token");
+    console.log("id", id, "token", token);
     setId(id);
     setToken(token);
+
+    setIsLoading(false);
   }, [authenticated]);
 
   const { isLoaded, loadError } = useLoadScript({
@@ -81,10 +85,10 @@ export default function UpdateInfo() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isAddressSelected) {
-      alert("Please select an address from the suggestions or map.");
-      return;
-    }
+    // if (!isAddressSelected) {
+    //   alert("Please select an address from the suggestions or map.");
+    //   return;
+    // }
 
     const formData = {
       name: name || undefined,
@@ -165,6 +169,11 @@ export default function UpdateInfo() {
       </div>
     );
   }
+  if (isLoading) {
+    <div className="h-screen w-full flex justify-center items-center">
+      <ImSpinner2 className="animate-spin h-12 w-12" />
+    </div>;
+  }
 
   if (!isLoaded) {
     return (
@@ -179,8 +188,8 @@ export default function UpdateInfo() {
       <Head>
         <title>Update Info</title>
       </Head>
-      <div className="p-2 gap-2 flex justify-center relative">
-        <div className="bg-white p-8 rounded-lg shadow-lg w-[400px] max-w-md">
+      <div className="p-2 gap-2 h-full flex flex-col md:flex-row justify-center relative gap-x-8">
+        <div className="bg-white p-8 rounded-lg shadow-lg w-[350px] max-w-md ">
           <h2 className="text-2xl font-bold mb-6 text-center">Update Info</h2>
           <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
             <div>
@@ -256,8 +265,8 @@ export default function UpdateInfo() {
           </p>
         </div>
         <Map
-          height="h-full"
-          width="w-[400px]"
+          height="h-[650px]"
+          width="w-[350px] lg:w-[600px]"
           coordinates={lat && lng ? { lat, lng } : null}
           onMapClick={handleMapClick}
         />
