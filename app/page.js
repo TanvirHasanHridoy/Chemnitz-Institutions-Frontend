@@ -167,7 +167,7 @@ export default function Home() {
   const [isFavourite, setIsFavourite] = useState("false");
   const [token, setToken] = useState();
   const [userId, setUserId] = useState();
-
+  const [counter, setCounter] = useState(0);
   useEffect(() => {
     const Ntoken = Cookies.get("token");
     const Nid = localStorage.getItem("id");
@@ -204,6 +204,7 @@ export default function Home() {
           duration: 3000,
           position: "top-center",
         });
+        setCounter(counter + 1);
       } else {
         const data = await response.json();
         console.log("Error:", data);
@@ -251,7 +252,7 @@ export default function Home() {
           console.error("Error while setting home:", error);
         });
     }
-  }, [userId, token, favoriteAddress, isFavourite]);
+  }, [userId, token, favoriteAddress, isFavourite, counter]);
 
   const specificPoint = { lat: lat, lng: lan };
   const [googleGeoResponse, setGoogleGeoResponse] = useState();

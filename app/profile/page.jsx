@@ -22,6 +22,8 @@ const Profile = () => {
   const center = { lat: 6.5244, lng: 3.3792 };
   const directionsService = useRef(null);
   const { authenticated, setAuthenticated } = useContext(AuthContext);
+
+  // Map load callback
   const onLoad = (mapInstance) => {
     setMap(mapInstance);
   };
