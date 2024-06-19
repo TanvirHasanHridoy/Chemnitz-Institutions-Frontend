@@ -2,9 +2,13 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <div className="w-full bg-blue-700">
-      <div className="text-6xl text-white text-center italic">
-        This will be the footer!
+    <div className="w-full h-20 md:h-32  bg-gray-400 flex items-center justify-center">
+      <div className="text-xs text-white text-center p-4 md:p-10 lg:p-16  ">
+        <p>
+          This project is build with Open Data Portal's API, Google Maps API,
+          Next.js 13, Express, Mongoose etc.
+        </p>
+        <p>© 2024 Open Data Portal. All rights reserved.</p>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import Link from "next/link";
 import { Loader } from "@googlemaps/js-api-loader";
-import { FaRegStar } from "react-icons/fa";
+import { FaRegStar, FaStar } from "react-icons/fa";
 import Cookies from "js-cookie";
 import { TbHomeFilled } from "react-icons/tb";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -104,6 +104,9 @@ export default function Home() {
   };
 
   const calculateDistance = (origin, destination) => {
+    console.log("trying to calculate distance for :");
+    console.log("origin:", origin);
+    console.log("destination:", destination);
     if (!window.google) return;
     const service = new window.google.maps.DistanceMatrixService();
     service.getDistanceMatrix(
@@ -113,11 +116,25 @@ export default function Home() {
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (response, status) => {
+        console.log("response:", response);
         if (status === "OK") {
-          const distanceText = response.rows[0].elements[0].distance.text;
-          const driveTimeText = response.rows[0].elements[0].duration.text;
-          setDistance(distanceText);
-          setDriveTime(driveTimeText);
+          const result = response.rows[0].elements[0];
+          if (result.status === "OK") {
+            const distanceText = result.distance.text;
+            const driveTimeText = result.duration.text;
+            setDistance(distanceText);
+            setDriveTime(driveTimeText);
+          } else {
+            console.error("No valid route found. Status:", result.status);
+            // Handle no valid route case, e.g., set distance and time to null or display a message to the user
+            setDistance("N/A");
+            setDriveTime("N/A");
+          }
+        } else {
+          console.error("Distance Matrix request failed. Status:", status);
+          // Handle API request failure case
+          setDistance("N/A");
+          setDriveTime("N/A");
         }
       }
     );
@@ -184,9 +201,12 @@ export default function Home() {
       console.error("Server error:", err);
     }
   };
-
+  const [favoriteLat, setFavoriteLat] = useState();
+  const [favoriteLan, setFavoriteLan] = useState();
+  const [favoriteAddress, setFavoriteAddress] = useState();
   useEffect(() => {
     if (userId && token) {
+      // getting home
       fetch(`http://localhost:3000/user/home/${userId}`, {
         credentials: "include",
         headers: {
@@ -195,14 +215,32 @@ export default function Home() {
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log("Home data is ", data.home);
           setLat(data.home.lat);
           setLan(data.home.lan);
         })
         .catch((error) => {
           console.error("Error while setting home:", error);
         });
+      // getting favorite
+      fetch(`http://localhost:3000/user/favorite/${userId}`, {
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("data for user favourite is:", data);
+          setFavoriteLat(data.favorite.lat);
+          setFavoriteLan(data.favorite.lan);
+          setFavoriteAddress(data.favorite.address);
+        })
+        .catch((error) => {
+          console.error("Error while setting home:", error);
+        });
     }
-  }, [userId, token]);
+  }, [userId, token, favoriteAddress]);
 
   const specificPoint = { lat: lat, lng: lan };
   const [googleGeoResponse, setGoogleGeoResponse] = useState();
@@ -227,12 +265,12 @@ export default function Home() {
       <Head>
         <title>Chemnitz institutions</title>
       </Head>
-      <div>
-        <div className="flex w-full min-h-screen flex-col items-center justify-between">
-          <div className="h-screen w-full bg-[#dae6d5] py-10">
-            <div className="flex justify-between items-start px-40 mb-4">
+      <div className="">
+        <div className="flex w-full  flex-col items-center bg-[#dae6d5] justify-between">
+          <div className=" py-10 w-[80%]">
+            <div className="flex flex-col sm:flex-row h-[400px] sm:h-[240px]  mx-auto justify-between items-start  mb-4">
               {/* filtering options */}
-              <div className="w-72 block mb-10">
+              <div className=" block mb-10">
                 <h2 className="text-xl font-bold "> Filter options :</h2>
                 {options.map((option, index) => (
                   <div key={index} className="flex items-center mb-2">
@@ -250,7 +288,7 @@ export default function Home() {
                 ))}
               </div>
               {/* New indications */}
-              <div className=" border-2 border-blue-400 p-2  rounded-2xl w-fit">
+              <div className=" border-2 border-blue-400 p-2  rounded-2xl ">
                 <h2 className="font-bold text-sm mb-2">
                   ***Please see the indications
                 </h2>
@@ -316,7 +354,7 @@ export default function Home() {
                 }}
                 center={{ lat: 50.8285947, lng: 12.9216001 }}
                 zoom={12}
-                mapContainerClassName="w-[80%] h-2/3 mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
+                mapContainerClassName="h-[500px]  mx-auto rounded-lg drop-shadow-2xl shadow-red-700"
               >
                 {map && userId && token && (
                   // Home marker
@@ -359,23 +397,45 @@ export default function Home() {
                     onCloseClick={handleInfoWindowClose}
                   >
                     <div>
-                      <div className="w-full flex justify-end items-center overflow-hidden px-2">
-                        <FaRegStar
-                          onClick={() => {
-                            handleFavoriteClick(
-                              selectedMarker.properties.STRASSE,
-                              selectedMarker.geometry.y,
-                              selectedMarker.geometry.x
-                            );
-                          }}
-                          className="h-6 w-6 hover:scale-125 hover:-rotate-45 transition-all cursor-pointer"
-                        />
-                      </div>
-                      <h2 className="text-base font-bold mb-3">
-                        {selectedMarker.properties.TRAEGER
-                          ? selectedMarker.properties.TRAEGER
-                          : selectedMarker.properties.BEZEICHNUNG}
-                      </h2>
+                      {token && userId && (
+                        <div className="w-full flex justify-end items-center overflow-hidden px-2">
+                          {selectedMarker.properties.STRASSE ===
+                          favoriteAddress ? (
+                            <FaStar
+                              onClick={() => {
+                                handleFavoriteClick(
+                                  selectedMarker.properties.STRASSE,
+                                  selectedMarker.geometry.y,
+                                  selectedMarker.geometry.x
+                                );
+                              }}
+                              className="h-6 w-6 hover:scale-125 hover:-rotate-45 transition-all cursor-pointer"
+                            />
+                          ) : (
+                            <FaRegStar
+                              onClick={() => {
+                                handleFavoriteClick(
+                                  selectedMarker.properties.STRASSE,
+                                  selectedMarker.geometry.y,
+                                  selectedMarker.geometry.x
+                                );
+                              }}
+                              className="h-6 w-6 hover:scale-125 hover:-rotate-45 transition-all cursor-pointer"
+                            />
+                          )}
+                          {/* <FaRegStar
+                            onClick={() => {
+                              handleFavoriteClick(
+                                selectedMarker.properties.STRASSE,
+                                selectedMarker.geometry.y,
+                                selectedMarker.geometry.x
+                              );
+                            }}
+                            className="h-6 w-6 hover:scale-125 hover:-rotate-45 transition-all cursor-pointer"
+                          /> */}
+                        </div>
+                      )}
+
                       <h1 className="text-gray-500">
                         Type : {selectedMarker.properties.TYPE}{" "}
                       </h1>
@@ -444,9 +504,6 @@ export default function Home() {
                 )}
               </GoogleMap>
             )}
-          </div>
-          <div className="w-full px-8 pt-4 pb-2 ">
-            {/* previous  indications */}
           </div>
         </div>
       </div>
