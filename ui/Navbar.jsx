@@ -129,7 +129,9 @@ const Navbar = () => {
 
                   <DropdownMenuItem>
                     <Pen className="mr-2 h-4 w-4" />
-                    <span>Update</span>
+                    <Link href="/profile/update">
+                      <span>Update</span>
+                    </Link>
                     <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>

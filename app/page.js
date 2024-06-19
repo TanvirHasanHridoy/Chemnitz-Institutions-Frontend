@@ -86,7 +86,16 @@ export default function Home() {
 
   const createMarkerIcon = (item) => {
     if (!window.google) return null;
-
+    // console.log(item.properties.STRASSE, favoriteAddress);
+    if (item.properties.STRASSE === favoriteAddress) {
+      // console.log(item.properties.STRASSE, favoriteAddress);
+      return {
+        url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFxMQwekK1o688fvUGkTNCoXbevh526wyBjA&usqp=CAU",
+        scaledSize: new window.google.maps.Size(30, 30),
+        origin: new window.google.maps.Point(0, 0),
+        anchor: new window.google.maps.Point(21, 42),
+      };
+    }
     return {
       url: `https://maps.google.com/mapfiles/ms/icons/${
         item.properties.TYPE === "Schulens"
@@ -240,7 +249,7 @@ export default function Home() {
           console.error("Error while setting home:", error);
         });
     }
-  }, [userId, token, favoriteAddress]);
+  }, [userId, token, favoriteAddress, isFavourite]);
 
   const specificPoint = { lat: lat, lng: lan };
   const [googleGeoResponse, setGoogleGeoResponse] = useState();
