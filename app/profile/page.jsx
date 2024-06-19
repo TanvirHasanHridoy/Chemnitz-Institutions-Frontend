@@ -53,12 +53,12 @@ const Profile = () => {
 
   useEffect(() => {
     console.log("authenticated status from profile page", authenticated);
-    if (!authenticated) {
+    const id = localStorage.getItem("id");
+    const token = Cookies.get("token");
+    if (!id || !token) {
       window.location.href = "/signin";
       return;
     }
-    const id = localStorage.getItem("id");
-    const token = Cookies.get("token");
     fetch(`http://localhost:3000/user/getuser/${id}`, {
       method: "GET",
       headers: {
@@ -150,7 +150,7 @@ const Profile = () => {
           )}
         </div>
         <button
-          className="p-2  bg-blue-600py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-white"
+          className="p-2  bg-blue-600py-2 rounded-lg bg-blue-700 hover:bg-green-500 transition duration-200 text-white"
           onClick={getRoute}
         >
           GET ROUTE

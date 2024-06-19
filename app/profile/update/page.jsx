@@ -23,11 +23,11 @@ export default function UpdateInfo() {
   const { authenticated, setAuthenticated } = useContext(AuthContext);
   useEffect(() => {
     console.log("authenticated status from update", authenticated);
-    if (!authenticated) {
-      window.location.href = "/signin";
-    }
     const id = localStorage.getItem("id");
     const token = Cookies.get("token");
+    if (!id || !token) {
+      window.location.href = "/signin";
+    }
     console.log("id", id, "token", token);
     setId(id);
     setToken(token);
@@ -191,6 +191,9 @@ export default function UpdateInfo() {
       <div className="p-2 gap-2 h-full flex flex-col md:flex-row justify-center relative gap-x-8">
         <div className="bg-white p-8 rounded-lg shadow-lg w-[350px] max-w-md ">
           <h2 className="text-2xl font-bold mb-6 text-center">Update Info</h2>
+          <h4 className="text-xs mb-2 text-red-700">
+            ***Only enter the fields you want to update
+          </h4>
           <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-gray-700">Name</label>
@@ -257,12 +260,6 @@ export default function UpdateInfo() {
               Update
             </button>
           </form>
-          <p className="mt-4 text-center">
-            Already have an account?{" "}
-            <Link href="/signin" className="text-blue-600 hover:underline">
-              Log in
-            </Link>
-          </p>
         </div>
         <Map
           height="h-[650px]"

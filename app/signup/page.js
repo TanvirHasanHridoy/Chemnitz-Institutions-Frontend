@@ -1,6 +1,6 @@
 "use client";
 import Head from "next/head";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import axios from "axios";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import { ImSpinner2 } from "react-icons/im";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import Map from "@/ui/Map";
+import { AuthContext } from "@/context/Context";
 
 const libraries = ["places"];
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -18,6 +19,16 @@ export default function SignUp() {
     googleMapsApiKey,
     libraries,
   });
+
+  const { authenticated, setAuthenticated } = useContext(AuthContext);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const id = localStorage.getItem("id");
+    if (token && id) {
+      setAuthenticated(true);
+      window.location.href = "/profile";
+    }
+  }, []);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

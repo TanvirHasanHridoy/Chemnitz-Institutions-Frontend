@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 import Head from "next/head";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "@/context/Context";
 import toast from "react-hot-toast";
@@ -22,6 +22,14 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
 
   const { authenticated, setAuthenticated } = useContext(AuthContext);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const id = localStorage.getItem("id");
+    if (token && id) {
+      setAuthenticated(true);
+      window.location.href = "/profile";
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

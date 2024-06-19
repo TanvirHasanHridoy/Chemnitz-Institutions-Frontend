@@ -24,6 +24,7 @@ import {
   User,
   UserPlus,
   Users,
+  Trash,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -55,11 +56,15 @@ const Navbar = () => {
       console.log("The data is");
       console.log(data);
       setToken(null);
+      setId(null);
       toast.success("User logged out successfully", {
         duration: 4000,
       });
       Cookies.remove("token");
+      localStorage.removeItem("id");
+      localStorage.removeItem("token");
       setAuthenticated(false);
+      window.location.href = "/";
     });
   }
 
@@ -71,7 +76,7 @@ const Navbar = () => {
     setLoading(false);
   }, []);
 
-  console.log("Is he authenticated? (nav)", authenticated);
+  // console.log("Is he authenticated? (nav)", authenticated);
 
   return (
     <section>
@@ -132,7 +137,14 @@ const Navbar = () => {
                     <Link href="/profile/update">
                       <span>Update</span>
                     </Link>
-                    <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                    <DropdownMenuShortcut>⌘U</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Trash className="mr-2 h-4 w-4" />
+                    <Link href="/profile/delete">
+                      <span>Delete Profile</span>
+                    </Link>
+                    <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
 
@@ -140,7 +152,7 @@ const Navbar = () => {
                 <DropdownMenuItem>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span onClick={handleLogout}>Log out</span>
-                  <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                  <DropdownMenuShortcut>⇧⌘L</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
