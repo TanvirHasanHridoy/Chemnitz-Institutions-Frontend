@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import Map from "@/ui/Map";
 import { AuthContext } from "@/context/Context";
+import Cookies from "js-cookie";
 
 const libraries = ["places"];
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -22,7 +23,7 @@ export default function SignUp() {
 
   const { authenticated, setAuthenticated } = useContext(AuthContext);
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get("token");
     const id = localStorage.getItem("id");
     if (token && id) {
       setAuthenticated(true);
@@ -107,7 +108,7 @@ export default function SignUp() {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/auth/createuser",
+        "http://localhost:3000/user/createuser",
         formData
       );
       if (res.status === 201) {

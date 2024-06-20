@@ -7,6 +7,7 @@ import { AuthContext } from "@/context/Context";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import Link from "next/link";
+import Cookies from "js-cookie";
 
 // Schema using Zod
 const signInSchema = z.object({
@@ -23,7 +24,7 @@ export default function SignIn() {
 
   const { authenticated, setAuthenticated } = useContext(AuthContext);
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get("token");
     const id = localStorage.getItem("id");
     if (token && id) {
       setAuthenticated(true);
@@ -54,7 +55,7 @@ export default function SignIn() {
     // WITH AXIOS
     try {
       const res = await axios.post(
-        "http://localhost:3000/auth/login",
+        "http://localhost:3000/user/login",
         formData,
         { withCredentials: true }
       );
